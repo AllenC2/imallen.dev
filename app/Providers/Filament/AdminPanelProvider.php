@@ -26,6 +26,8 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->brandLogo('/storage/logos/logo_imallendev_horizontal.svg')
+            ->brandLogoHeight('2rem')
             ->login()
             ->breadcrumbs(false)
             ->colors([

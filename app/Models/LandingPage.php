@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class LandingPage extends Model
 {
@@ -15,7 +16,15 @@ class LandingPage extends Model
         'seo_image',
         'is_default_root',
         'visits',
+        'variables',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'variables' => 'array',
+        ];
+    }
 
     protected static function booted()
     {
@@ -25,5 +34,12 @@ class LandingPage extends Model
                 static::where('id', '!=', $landingPage->id)->update(['is_default_root' => false]);
             }
         });
+    }
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class)
+            ->withPivot('sort_order')
+            ->withTimestamps();
     }
 }

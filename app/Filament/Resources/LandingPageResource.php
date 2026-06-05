@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\LandingPageResource\Pages;
 use App\Filament\Resources\LandingPageResource\RelationManagers;
 use App\Models\LandingPage;
+use App\Services\TemplateVariableParser;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -39,6 +40,7 @@ class LandingPageResource extends Resource
                 Forms\Components\Select::make('view_file')
                     ->label('Template File')
                     ->required()
+                    ->live()
                     ->options(function () {
                         $path = resource_path('views/landing-pages');
                         if (!\Illuminate\Support\Facades\File::exists($path)) {
@@ -61,6 +63,45 @@ class LandingPageResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\Toggle::make('is_default_root')
                     ->required(),
+                Forms\Components\Section::make('Variables del Template')
+                    ->schema(function (Forms\Get $get) {
+                        $viewFile = $get('view_file');
+
+                        if (!$viewFile) {
+                            return [
+                                Forms\Components\Placeholder::make('no_template')
+                                    ->label('Sin template')
+                                    ->content('Selecciona un template para ver sus variables.'),
+                            ];
+                        }
+
+                        $variables = \App\Services\TemplateVariableParser::parse($viewFile);
+                        if (empty($variables)) {
+                            return [
+                                Forms\Components\Placeholder::make('no_vars')
+                                    ->label('Sin variables')
+                                    ->content('Este template no tiene variables. Agrega {{-- @var name:type --}} en el Blade.'),
+                            ];
+                        }
+
+                        return collect($variables)->map(function ($type, $name) {
+                            $label = $name . ' (' . $type . ')';
+                            if ($type === 'image') {
+                                return Forms\Components\FileUpload::make("variables.{$name}")
+                                    ->label($label)
+                                    ->image()
+                                    ->directory('landing-vars')
+                                    ->columnSpanFull();
+                            }
+                            if ($type === 'toggle') {
+                                return Forms\Components\Toggle::make("variables.{$name}")
+                                    ->label($label);
+                            }
+                            return Forms\Components\TextInput::make("variables.{$name}")
+                                ->label($label);
+                        })->values()->toArray();
+                    })
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -115,7 +156,7 @@ class LandingPageResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ProjectsRelationManager::class,
         ];
     }
 

@@ -35,6 +35,7 @@ class HomeController extends Controller
         $services = Service::all();
         $plans = Plan::with('features')->get();
         $faqs = Faq::orderBy('sort_order')->get();
+        $projects = $landingPage ? $landingPage->projects()->orderBy('landing_page_project.sort_order')->get() : collect();
 
         $viewName = $landingPage && $landingPage->view_file ? $landingPage->view_file : 'landing-pages.welcome';
 
@@ -42,7 +43,9 @@ class HomeController extends Controller
             $landingPage->increment('visits');
         }
 
-        return view($viewName, compact('services', 'plans', 'faqs', 'landingPage'));
+        $templateVars = $landingPage ? ($landingPage->variables ?? []) : [];
+
+        return view($viewName, compact('services', 'plans', 'faqs', 'projects', 'landingPage') + $templateVars);
     }
 
     public function storeContact(Request $request)
