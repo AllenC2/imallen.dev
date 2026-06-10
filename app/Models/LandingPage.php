@@ -42,4 +42,11 @@ class LandingPage extends Model
             ->withPivot('sort_order')
             ->withTimestamps();
     }
+
+    public function services(): BelongsToMany
+    {
+        return $this->belongsToMany(Service::class)
+            ->withPivot('sort_order')
+            ->withTimestamps();
+    }
 }

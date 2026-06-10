@@ -30,16 +30,37 @@ class ContactResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label('Nombre')
                     ->required(),
                 Forms\Components\TextInput::make('email')
+                    ->label('Email')
                     ->email()
-                    ->required(),
-                Forms\Components\TextInput::make('service_interest'),
+                    ->nullable(),
+                Forms\Components\TextInput::make('phone')
+                    ->label('Teléfono')
+                    ->nullable(),
+                Forms\Components\TextInput::make('date')
+                    ->label('Fecha preferida')
+                    ->nullable(),
+                Forms\Components\TextInput::make('time')
+                    ->label('Hora preferida')
+                    ->nullable(),
+                Forms\Components\TextInput::make('service_interest')
+                    ->label('Servicio de interés')
+                    ->nullable(),
                 Forms\Components\Textarea::make('message')
-                    ->required()
+                    ->label('Mensaje')
+                    ->nullable()
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('status')
-                    ->required(),
+                Forms\Components\Select::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'pending' => 'Pendiente',
+                        'reviewed' => 'Revisado',
+                        'replied' => 'Respondido',
+                    ])
+                    ->required()
+                    ->default('pending'),
             ]);
     }
 
@@ -48,12 +69,38 @@ class ContactResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('Teléfono')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('date')
+                    ->label('Fecha')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('time')
+                    ->label('Hora'),
                 Tables\Columns\TextColumn::make('service_interest')
+                    ->label('Servicio')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Estado')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'reviewed' => 'info',
+                        'replied' => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => 'Pendiente',
+                        'reviewed' => 'Revisado',
+                        'replied' => 'Respondido',
+                        default => $state,
+                    })
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -64,6 +111,7 @@ class ContactResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

@@ -10,5 +10,5 @@ class Contact extends Model
     /** @use HasFactory<\Database\Factories\ContactFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'email', 'service_interest', 'message', 'status'];
+    protected $fillable = ['name', 'email', 'phone', 'service_interest', 'message', 'date', 'time', 'status'];
 }

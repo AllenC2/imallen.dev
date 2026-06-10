@@ -59,10 +59,64 @@ class LandingPageResource extends Resource
                 Forms\Components\FileUpload::make('seo_image')
                     ->label('SEO Cover Image (Meta Portada)')
                     ->image()
+                    ->imagePreviewHeight('200')
+                    ->disk('public')
                     ->directory('seo-images')
+                    ->previewable()
                     ->columnSpanFull(),
                 Forms\Components\Toggle::make('is_default_root')
                     ->required(),
+                Forms\Components\Section::make('Proyectos')
+                    ->description('Arrastra para reorganizar el orden de los proyectos.')
+                    ->schema([
+                        Forms\Components\Repeater::make('projects')
+                            ->label('')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nombre')
+                                    ->disabled(),
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descripción')
+                                    ->disabled()
+                                    ->rows(2),
+                                Forms\Components\TextInput::make('technologies')
+                                    ->label('Tecnologías')
+                                    ->disabled(),
+                            ])
+                            ->columns(3)
+                            ->reorderable()
+                            ->reorderAnimationDuration(200)
+                            ->addable(false)
+                            ->deletable(false)
+                            ->columnSpanFull(),
+                    ])
+                    ->visibleOn('edit')
+                    ->columnSpanFull(),
+                Forms\Components\Section::make('Servicios Destacados')
+                    ->description('Selecciona y organiza los servicios que aparecen en esta landing.')
+                    ->schema([
+                        Forms\Components\Repeater::make('services')
+                            ->label('')
+                            ->schema([
+                                Forms\Components\Select::make('id')
+                                    ->label('Servicio')
+                                    ->options(\App\Models\Service::all()->pluck('title', 'id'))
+                                    ->required()
+                                    ->searchable()
+                                    ->disableOptionWhen(function (string $value, $state, Forms\Get $get) {
+                                        $services = $get('../../services') ?? [];
+                                        $selectedIds = collect($services)->pluck('id')->filter()->toArray();
+                                        return in_array((int) $value, $selectedIds) && (int) $value !== (int) $state;
+                                    })
+                                    ->columnSpanFull(),
+                            ])
+                            ->reorderable()
+                            ->reorderAnimationDuration(200)
+                            ->addActionLabel('Agregar servicio')
+                            ->columnSpanFull(),
+                    ])
+                    ->visibleOn('edit')
+                    ->columnSpanFull(),
                 Forms\Components\Section::make('Variables del Template')
                     ->schema(function (Forms\Get $get) {
                         $viewFile = $get('view_file');
@@ -90,7 +144,10 @@ class LandingPageResource extends Resource
                                 return Forms\Components\FileUpload::make("variables.{$name}")
                                     ->label($label)
                                     ->image()
+                                    ->imagePreviewHeight('200')
+                                    ->disk('public')
                                     ->directory('landing-vars')
+                                    ->previewable()
                                     ->columnSpanFull();
                             }
                             if ($type === 'toggle') {
@@ -156,7 +213,7 @@ class LandingPageResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\ProjectsRelationManager::class,
+            //
         ];
     }
 

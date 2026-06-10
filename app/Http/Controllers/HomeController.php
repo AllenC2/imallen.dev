@@ -32,7 +32,7 @@ class HomeController extends Controller
 
     protected function renderLandingPage(?LandingPage $landingPage)
     {
-        $services = Service::all();
+        $services = $landingPage ? $landingPage->services()->orderBy('landing_page_service.sort_order')->get() : collect();
         $plans = Plan::with('features')->get();
         $faqs = Faq::orderBy('sort_order')->get();
         $projects = $landingPage ? $landingPage->projects()->orderBy('landing_page_project.sort_order')->get() : collect();
@@ -50,11 +50,19 @@ class HomeController extends Controller
 
     public function storeContact(Request $request)
     {
+        // Honeypot: si tiene contenido, es un bot
+        if ($request->filled('website')) {
+            return response()->json(['success' => true]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:50',
+            'date' => 'nullable|string|max:50',
+            'time' => 'nullable|string|max:50',
             'service_interest' => 'nullable|string',
-            'message' => 'required|string'
+            'message' => 'nullable|string',
         ]);
 
         Contact::create($validated);

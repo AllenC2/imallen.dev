@@ -22,10 +22,6 @@ class ProjectsRelationManager extends RelationManager
                     ->options(Project::all()->pluck('name', 'id'))
                     ->required()
                     ->searchable(),
-                Forms\Components\TextInput::make('sort_order')
-                    ->label('Orden')
-                    ->required()
-                    ->default(0),
             ]);
     }
 
@@ -33,11 +29,11 @@ class ProjectsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('name')
+            ->reorderable('sort_order')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Descripción')
                     ->limit(100)
@@ -51,15 +47,10 @@ class ProjectsRelationManager extends RelationManager
                         return collect($state)->implode(', ');
                     })
                     ->limit(80),
-                Tables\Columns\TextColumn::make('sort_order')
-                    ->label('Orden')
-                    ->sortable(query: fn ($query, $direction) => $query->orderBy('landing_page_project.sort_order', $direction)),
             ])
             ->defaultSort('landing_page_project.sort_order')
             ->modifyQueryUsing(fn ($query) => $query->orderBy('landing_page_project.sort_order'))
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
                     ->preloadRecordSelect(),

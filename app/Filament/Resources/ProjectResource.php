@@ -50,7 +50,10 @@ class ProjectResource extends Resource
                     ->multiple()
                     ->reorderable()
                     ->appendFiles()
+                    ->disk('public')
                     ->directory('projects')
+                    ->previewable()
+                    ->imagePreviewHeight('150')
                     ->columnSpanFull(),
                 Forms\Components\Repeater::make('links')
                     ->label('Enlaces')
@@ -63,6 +66,7 @@ class ProjectResource extends Resource
                                 'demo' => 'Demo',
                                 'figma' => 'Figma',
                                 'npm' => 'NPM',
+                                'behance' => 'Behance',
                                 'other' => 'Otro',
                             ])
                             ->required(),

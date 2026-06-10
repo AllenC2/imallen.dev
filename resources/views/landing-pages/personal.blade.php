@@ -12,19 +12,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <style>
+        :root {
+            --gradient-start: {{ $gradientColor1 ?? '#8b5cf6' }};
+            --gradient-end: {{ $gradientColor2 ?? '#f97316' }};
+        }
+
+        .section-title span {
+            background-image: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+        }
+
+        .highlight-border::before {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 8vw, 4.5rem) !important;
+        }
+
         .hero-personal-bg {
             max-width: 100% !important;
             margin: 0 !important;
-            padding: 0 max(5vw, calc(50vw - 630px)) !important;
+            padding: 0 max(2vw, calc(50vw - 680px)) !important;
             background-image:
-                url('/storage/images/herop-sujeto.png'),
-                url('/storage/images/herop-fondo.png');
+                url('{{ ($heroSubject ?? null) ? Storage::url($heroSubject) : '/storage/images/herop-sujeto.png' }}'),
+                url('{{ ($heroBg ?? null) ? Storage::url($heroBg) : '/storage/images/herop-fondo.png' }}');
             background-size:
                 auto 95%,
                 /* El sujeto casi cubre el alto */
@@ -37,6 +58,11 @@
             /* Fondo centrado */
             background-repeat: no-repeat, no-repeat;
             position: relative;
+        }
+
+        .hero-personal-bg .hero-content {
+            text-align: left !important;
+            align-items: flex-start !important;
         }
 
         .hero-personal-bg::after {
@@ -58,22 +84,41 @@
         /* Ajustes responsivos para que en móvil el sujeto no tape el texto principal */
         @media (max-width: 1024px) {
             .hero-personal-bg {
+                min-height: 100vh;
+                min-height: 100dvh;
+                display: flex;
+                align-items: flex-start;
+                padding: 120px 20px 40px 20px !important;
+                text-align: left !important;
                 background-size:
-                    85% auto,
+                    auto 60%,
                     cover;
                 background-position:
                     center bottom,
                     center center;
+                overflow: hidden;
             }
 
             .hero-personal-bg .hero-content {
                 max-width: 100%;
                 z-index: 10;
-                background: rgba(2, 4, 10, 0.4);
-                /* Leve sombra en móvil para asegurar legibilidad */
-                padding: 2rem;
-                border-radius: 20px;
-                backdrop-filter: blur(5px);
+                position: relative;
+                text-align: left;
+                align-items: flex-start !important;
+                padding: 0 !important;
+            }
+
+            .hero-personal-bg .hero-content h1,
+            .hero-personal-bg .hero-content p {
+                text-align: left !important;
+            }
+
+            .hero-personal-bg .hero-content .hero-subtitle {
+                max-width: 560px !important;
+            }
+
+            .hero-mini-carousel {
+                display: none;
             }
         }
 
@@ -145,7 +190,7 @@
             text-decoration: none;
             transition: all 0.3s ease;
             background: var(--item-color, var(--accent));
-            color: white;
+            color: var(--item-text-color, #ffffff);
             box-shadow: 0 0 20px var(--item-glow, rgba(139, 92, 246, 0.3));
             border: none;
             cursor: pointer;
@@ -224,52 +269,420 @@
             background: rgba(249, 115, 22, 0.1) !important;
         }
 
-        /* Flatpickr Custom Overrides */
-        .flatpickr-calendar.dark {
-            background: rgba(0, 0, 0, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.9);
+        /* Custom Date/Time Selectors */
+        .date-options,
+        .time-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
         }
 
-        .flatpickr-day.selected,
-        .flatpickr-day.startRange,
-        .flatpickr-day.endRange,
-        .flatpickr-day.selected.inRange,
-        .flatpickr-day.startRange.inRange,
-        .flatpickr-day.endRange.inRange,
-        .flatpickr-day.selected:focus,
-        .flatpickr-day.startRange:focus,
-        .flatpickr-day.endRange:focus,
-        .flatpickr-day.selected:hover,
-        .flatpickr-day.startRange:hover,
-        .flatpickr-day.endRange:hover,
-        .flatpickr-day.selected.prevMonthDay,
-        .flatpickr-day.startRange.prevMonthDay,
-        .flatpickr-day.endRange.prevMonthDay,
-        .flatpickr-day.selected.nextMonthDay,
-        .flatpickr-day.startRange.nextMonthDay,
-        .flatpickr-day.endRange.nextMonthDay {
+        @media (min-width: 640px) {
+            .date-options,
+            .time-options {
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 4px;
+                scrollbar-width: none;
+            }
+
+            .date-options::-webkit-scrollbar,
+            .time-options::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        .time-groups {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .time-group-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+            cursor: pointer;
+            padding: 6px 14px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.25s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            display: inline-block;
+        }
+
+        .time-group-label:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .time-group-label.active {
+            background: rgba(249, 115, 22, 0.15);
+            border-color: #f97316;
+            color: #ffffff;
+        }
+
+        .time-period {
+            display: none;
+        }
+
+        .time-period.active {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .time-period .date-options {
+            display: contents;
+        }
+
+        @media (min-width: 640px) {
+            .time-period.active {
+                display: flex;
+            }
+
+            .time-period .date-options {
+                display: flex;
+                gap: 8px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 4px;
+                scrollbar-width: none;
+            }
+
+            .time-period .date-options::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        .date-option,
+        .time-option {
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            min-width: 0;
+        }
+
+        .date-option:hover,
+        .time-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .date-option.active,
+        .time-option.active {
+            background: rgba(249, 115, 22, 0.15);
+            border-color: #f97316;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+        }
+
+        .date-day {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            opacity: 0.7;
+        }
+
+        .date-option.active .date-day {
+            opacity: 1;
+        }
+
+        .date-num {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .date-month {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+            opacity: 0.5;
+        }
+
+        .date-option.active .date-month {
+            opacity: 0.8;
+        }
+
+        .time-option {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Contact Toggle Phone/Email */
+        .contact-toggle {
+            display: flex;
+            gap: 0;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .toggle-option {
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .toggle-option.active {
+            background: #f97316;
+            color: white;
+        }
+
+        .toggle-option:hover:not(.active) {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Disable bento hover effects */
+        .bento-item {
+            cursor: pointer !important;
+            overflow: hidden;
+        }
+
+        .bento-item img {
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1) !important;
+        }
+
+        .bento-item:hover img {
+            transform: scale(1.08) !important;
+        }
+
+        .bento-item:hover {
+            border-color: #f97316 !important;
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.3) !important;
+        }
+
+        .bento-overlay {
+            background: linear-gradient(to top, rgba(249, 115, 22, 0.5), transparent) !important;
+            opacity: 0 !important;
+            transition: opacity 0.4s ease !important;
+        }
+
+        .bento-item:hover .bento-overlay {
+            opacity: 1 !important;
+        }
+
+        /* Project link cards */
+        .bento-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Project Modal */
+        .project-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .project-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .project-modal {
+            background: #0a0a0f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .project-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+
+        .project-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .project-modal-gallery {
+            width: 100%;
+            overflow-x: auto;
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .project-modal-gallery img {
+            height: 220px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .project-modal-body {
+            padding: 0 24px 24px;
+        }
+
+        .project-modal-body h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-modal-body .modal-desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .project-modal-body .modal-techs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-modal-body .modal-techs span {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .project-modal-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .project-modal-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .project-modal-links a:hover {
             background: #f97316;
             border-color: #f97316;
+            color: white;
         }
 
-        .flatpickr-months .flatpickr-prev-month:hover svg,
-        .flatpickr-months .flatpickr-next-month:hover svg {
-            fill: #f97316;
+        /* Services: center pills + no padding on detail card */
+        .service-selection-list {
+            justify-content: center;
         }
 
-        .flatpickr-time {
-            padding: 1.5rem 1.5rem !important;
-            max-height: none !important;
-            height: auto !important;
+        .service-detail-card {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
         }
 
-        .flatpickr-time input:hover,
-        .flatpickr-time .flatpickr-am-pm:hover,
-        .flatpickr-time input:focus,
-        .flatpickr-time .flatpickr-am-pm:focus {
-            background: rgba(249, 115, 22, 0.2);
+        /* Services mobile: tabs on top */
+        @media (max-width: 992px) {
+            .services-interactive-container {
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+            }
+
+            .service-selection-list {
+                order: -1 !important;
+                flex-direction: row !important;
+                justify-content: center !important;
+                overflow-x: auto !important;
+                gap: 0.6rem !important;
+                padding-bottom: 0.5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .service-detail-card {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+
+            .service-selection-list .selection-item {
+                padding: 0.8rem 1.2rem !important;
+                white-space: nowrap;
+                flex-shrink: 0;
+                border-radius: 50px !important;
+                gap: 0.5rem;
+            }
+
+            .service-selection-list .selection-item span {
+                font-size: 0.8rem;
+                display: none;
+            }
+
+            .service-selection-list .selection-item.active span {
+                display: inline;
+            }
+
+            .service-selection-list .selection-item {
+                padding: 0.7rem !important;
+            }
+
+            .service-selection-list .selection-item.active {
+                padding: 0.7rem 1.2rem !important;
+            }
         }
     </style>
 
@@ -280,8 +693,23 @@
     {{-- @var heroTitle:text --}}
     {{-- @var heroSubtitle:text --}}
     {{-- @var heroImage:image --}}
+    {{-- @var heroBg:image --}}
+    {{-- @var heroSubject:image --}}
     {{-- @var showCta:toggle --}}
     {{-- @var ctaText:text --}}
+    {{-- @var servicesSectionTitle:text --}}
+    {{-- @var servicesSectionSubtitle:text --}}
+    {{-- @var gradientColor1:text --}}
+    {{-- @var gradientColor2:text --}}
+    {{-- @var projectsSectionTitle:text --}}
+    {{-- @var projectsSectionSubtitle:text --}}
+    {{-- @var pricingSectionTitle:text --}}
+    {{-- @var pricingSectionSubtitle:text --}}
+    {{-- @var contactSectionTitle:text --}}
+    {{-- @var contactSectionSubtitle:text --}}
+    {{-- @var contactListItem1:text --}}
+    {{-- @var contactListItem2:text --}}
+    {{-- @var contactListItem3:text --}}
 
     <!-- Header -->
     <header id="main-header"
@@ -353,54 +781,32 @@
         <div class="service-3d-wrapper" id="sphere-container"></div>
         <div class="container">
             <div class="section-title text-center">
-                <h2>Mis <span>Servicios</span></h2>
-                <p>Todos mis desarrollos cumplen con lo que hoy en dia deberian ser el estandar de la web moderna,
-                    enfocados en ayudarte a escalar.</p>
+                <h2>{!! $servicesSectionTitle ?? 'Mis <span>Servicios</span>' !!}</h2>
+                <p>{{ $servicesSectionSubtitle ?? 'Todos mis desarrollos cumplen con lo que hoy en dia deberian ser el estandar de la web moderna, enfocados en ayudarte a escalar.' }}</p>
             </div>
             <div class="services-interactive-container">
                 @php
-                    $hardcodedServices = [
-                        [
-                            'title' => 'Sistemas, Aplicaciones y Plataformas Web',
-                            'description' => 'Diseño y programo las soluciones a todo tipo de problematicas digitales que todo proyecto o negocio suele enfrentar, desde problemas de organización interna, hasta la automatización de procesos.',
-                            'icon' => 'fa-solid fa-layer-group',
-                            'button_text' => 'Me interesa',
-                        ],
-                        [
-                            'title' => 'Sitios de eCommerce y Marketing de Datos',
-                            'description' => 'Impulsa tus ventas con tiendas online optimizadas y estrategias basadas en el análisis profundo de datos.',
-                            'icon' => 'fa-solid fa-chart-line',
-                            'button_text' => 'Ver estrategias',
-                        ],
-                        [
-                            'title' => 'Atención al Cliente 100% Automatizada con IA',
-                            'description' => 'Automatización inteligente de canales de comunicación para brindar soporte 24/7 con lenguaje natural.',
-                            'icon' => 'fa-solid fa-robot',
-                            'button_text' => 'Probar IA',
-                        ]
+                    $fixedThemes = [
+                        ['c1' => [0.97, 0.45, 0.08], 'c2' => [0.98, 0.75, 0.14], 'scale' => 2.0, 'speed' => 0.4, 'hex' => '#f97316', 'text' => '#ffffff'],
+                        ['c1' => [0.54, 0.36, 0.96], 'c2' => [0.85, 0.27, 0.93], 'scale' => 3.5, 'speed' => 0.2, 'hex' => '#8b5cf6', 'text' => '#ffffff'],
+                        ['c1' => [0.96, 0.96, 0.95], 'c2' => [0.90, 0.90, 0.88], 'scale' => 1.5, 'speed' => 0.15, 'hex' => '#f5f5f4', 'text' => '#1a1a1a'],
                     ];
-                    $featuredServices = collect($hardcodedServices)->map(fn($s) => (object) $s);
-                    $firstService = $featuredServices->first();
-
-                    $themes = [
-                        ['c1' => [0.97, 0.45, 0.08], 'c2' => [0.98, 0.75, 0.14], 'scale' => 2.0, 'speed' => 0.4, 'hex' => '#f97316'], // Citrus Orange
-                        ['c1' => [0.54, 0.36, 0.96], 'c2' => [0.85, 0.27, 0.93], 'scale' => 3.5, 'speed' => 0.2, 'hex' => '#8b5cf6'], // Purple
-                        ['c1' => [0.96, 0.96, 0.95], 'c2' => [0.90, 0.90, 0.88], 'scale' => 1.5, 'speed' => 0.15, 'hex' => '#f5f5f4'], // Bone White
-                    ];
+                    $firstService = $services->first();
                 @endphp
                 @if($firstService)
                     <!-- Selection List (Left now) -->
                     <div class="service-selection-list">
-                        @foreach($featuredServices as $index => $service)
-                            @php $theme = $themes[$index] ?? $themes[0]; @endphp
+                        @foreach($services as $index => $service)
+                            @php $theme = $fixedThemes[$index % count($fixedThemes)]; @endphp
                             <div class="selection-item {{ $index === 0 ? 'active' : '' }}"
-                                style="--item-color: {{ $theme['hex'] }}; --item-glow: {{ $theme['hex'] }}44;"
+                                style="--item-color: {{ $theme['hex'] }}; --item-glow: {{ $theme['hex'] }}44; --item-text-color: {{ $theme['text'] }};"
                                 data-title="{{ $service->title }}" data-description="{{ $service->description }}"
                                 data-icon="{{ $service->icon ?? 'fa-solid fa-code' }}"
-                                data-btn-text="{{ $service->button_text ?? 'Saber más' }}"
+                                data-btn-text="Saber más"
                                 data-c1="{{ json_encode($theme['c1']) }}" data-c2="{{ json_encode($theme['c2']) }}"
                                 data-scale="{{ $theme['scale'] }}" data-speed="{{ $theme['speed'] }}"
-                                data-hex="{{ $theme['hex'] }}">
+                                data-hex="{{ $theme['hex'] }}"
+                                data-text="{{ $theme['text'] }}">
                                 <i class="{{ $service->icon ?? 'fa-solid fa-code' }}"></i>
                                 <span>{{ $service->title }}</span>
                             </div>
@@ -431,7 +837,7 @@
                             <a href="#contacto" class="service-cta primary-glow" id="detail-button"
                                 style="--item-color: #f97316; --item-glow: rgba(249, 115, 22, 0.4);">
                                 <i class="{{ $firstService->icon ?? 'fa-solid fa-code' }}" id="btn-icon"></i>
-                                <span id="btn-text">{{ $firstService->button_text ?? 'Saber más' }}</span>
+                                <span id="btn-text">Saber más</span>
                             </a>
                         </div>
                     </div>
@@ -450,9 +856,8 @@
     <section id="proyectos" class="projects section-padding">
         <div class="container container-wide">
             <div class="section-title text-center">
-                <h2>Mis <span>Proyectos</span></h2>
-                <p>Una selección de mis trabajos más destacados, donde la arquitectura digital se encuentra con la
-                    precisión.</p>
+                <h2>{!! $projectsSectionTitle ?? 'Mis <span>Proyectos</span>' !!}</h2>
+                <p>{{ $projectsSectionSubtitle ?? 'Una selección de mis trabajos más destacados, donde la arquitectura digital se encuentra con la precisión.' }}</p>
             </div>
             <div class="bento-grid">
                 @php
@@ -463,18 +868,24 @@
                         $layoutClass = $bentoLayouts[$index % count($bentoLayouts)];
                         $rawImage = !empty($project->images) ? $project->images[0] : null;
                         $firstImage = is_array($rawImage) ? ($rawImage['value'] ?? null) : $rawImage;
+                        $allImages = collect($project->images ?? [])->map(fn ($img) => is_array($img) ? ($img['value'] ?? null) : $img)->filter()->values();
+                        $techs = collect($project->technologies ?? [])->map(function ($t) {
+                            while (is_array($t) && isset($t['value'])) { $t = $t['value']; }
+                            return is_array($t) ? '' : (string) $t;
+                        })->filter()->values()->toArray();
+                        $links = is_array($project->links) ? $project->links : [];
                     @endphp
-                    <div class="bento-item {{ $layoutClass }}">
-                        <div
-                            style="position: absolute; top: 15px; left: 15px; background: #f97316; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; z-index: 10; box-shadow: 0 0 15px rgba(249,115,22,0.5);">
-                            {{ $index + 1 }}</div>
+                    <div class="bento-item {{ $layoutClass }} cursor-pointer"
+                        onclick="openProjectModal(this)"
+                        data-name="{{ $project->name }}"
+                        data-description="{{ $project->description }}"
+                        data-images="{{ $allImages->implode(',') }}"
+                        data-techs="{{ implode(',', $techs) }}"
+                        data-links="{{ json_encode($links) }}">
                         @if($firstImage)
                             <img src="{{ Storage::url($firstImage) }}" alt="{{ $project->name }} Showcase">
                         @endif
-                        <div class="bento-overlay">
-                            <h3>{{ $project->name }}</h3>
-                            <p>{{ Str::limit($project->description, 80) }}</p>
-                        </div>
+                        <div class="bento-overlay"></div>
                     </div>
                 @empty
                     <div class="bento-item item-large">
@@ -485,6 +896,20 @@
                     </div>
                 @endforelse
             </div>
+
+            <!-- Project Modal -->
+            <div class="project-modal-overlay" id="projectModal">
+                <div class="project-modal">
+                    <button class="project-modal-close" onclick="closeProjectModal()"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="project-modal-gallery" id="modalGallery"></div>
+                    <div class="project-modal-body">
+                        <h3 id="modalTitle"></h3>
+                        <p class="modal-desc" id="modalDesc"></p>
+                        <div class="modal-techs" id="modalTechs"></div>
+                        <div class="project-modal-links" id="modalLinks"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -493,9 +918,8 @@
         <div class="blur-blob purple-blob small-blob right-center"></div>
         <div class="container relative-z">
             <div class="section-title text-center">
-                <h2>Mi oferta de <span>planes</span></h2>
-                <p>Checa mi tabla de precios y dime que te parece, mándame mensaje si buscas algo mas especifico para tu
-                    proyecto.</p>
+                <h2>{!! $pricingSectionTitle ?? 'Mi oferta de <span>planes</span>' !!}</h2>
+                <p>{{ $pricingSectionSubtitle ?? 'Checa mi tabla de precios y dime que te parece, mándame mensaje si buscas algo mas especifico para tu proyecto.' }}</p>
             </div>
             <div class="pricing-grid">
                 @forelse($plans as $plan)
@@ -527,6 +951,7 @@
                             @endforeach
                         </ul>
                         <button class="cta-button {{ $plan->is_popular ? 'primary-glow' : 'secondary-glass' }} w-100"
+                            @if($plan->is_popular) style="background: linear-gradient(135deg, #f97316, #fb923c); box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);" @endif
                             onclick="document.getElementById('contacto').scrollIntoView({behavior: 'smooth'})">{{ $plan->button_text ?: 'Empezar ahora' }}</button>
                     </div>
                 @empty
@@ -549,54 +974,73 @@
         <div class="container relative-z">
             <div class="contact-wrapper">
                 <div class="contact-info">
-                    <h2>¿Hablamos por <span>Teléfono</span>?</h2>
-                    <p>Mi propuesta es simple: déjame tu número y agendamos una breve llamada para aterrizar tu proyecto
-                        y ver cómo puedo ayudarte.</p>
+                    <h2>{!! $contactSectionTitle ?? '¿Hablamos por <span>Teléfono</span>?' !!}</h2>
+                    <p>{{ $contactSectionSubtitle ?? 'Mi propuesta es simple: déjame tu número y agendamos una breve llamada para aterrizar tu proyecto y ver cómo puedo ayudarte.' }}</p>
                     <div class="info-items">
                         <div class="info-item">
-                            <i class="fa-solid fa-calendar-check"></i>
-                            <span>Tú eliges el mejor momento</span>
+                            <i class="fa-solid fa-calendar-check" style="color: #ffffff;"></i>
+                            <span>{{ $contactListItem1 ?? 'Tú eliges el mejor momento' }}</span>
                         </div>
                         <div class="info-item">
-                            <i class="fa-solid fa-clock"></i>
-                            <span>Llamada de 10-15 minutos</span>
+                            <i class="fa-solid fa-clock" style="color: #ffffff;"></i>
+                            <span>{{ $contactListItem2 ?? 'Llamada de 10-15 minutos' }}</span>
                         </div>
                         <div class="info-item">
-                            <i class="fa-solid fa-bolt"></i>
-                            <span>Sin rodeos, directo al grano</span>
+                            <i class="fa-solid fa-bolt" style="color: #ffffff;"></i>
+                            <span>{{ $contactListItem3 ?? 'Sin rodeos, directo al grano' }}</span>
                         </div>
                     </div>
                 </div>
                 <div class="contact-form-container">
-                    <form id="multi-step-form" class="multi-step-form">
+                    <form id="multi-step-form" class="multi-step-form" action="{{ route('contact.store') }}" method="POST">
                         @csrf
-                        <!-- Step 1: Phone -->
+                        <div style="position: absolute; left: -9999px;" aria-hidden="true">
+                            <input type="text" name="website" tabindex="-1" autocomplete="off">
+                        </div>
+                        <!-- Step 1: Phone or Email -->
                         <div class="form-step active" id="step-1">
                             <div class="form-group">
-                                <label for="phone">Tu número de teléfono</label>
-                                <input type="tel" id="phone" name="phone" required placeholder="Ej. +52 123 456 7890">
+                                <label for="phone" id="contact-label">Tu número de teléfono</label>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <div class="contact-toggle">
+                                        <button type="button" class="toggle-option active" data-mode="phone">
+                                            <i class="fa-solid fa-phone"></i>
+                                        </button>
+                                        <button type="button" class="toggle-option" data-mode="email">
+                                            <i class="fa-solid fa-envelope"></i>
+                                        </button>
+                                    </div>
+                                    <input type="tel" id="phone" name="phone" required placeholder="Ej. +52 123 456 7890"
+                                        style="flex: 1; margin: 0;">
+                                    <input type="email" id="email" name="email" placeholder="tu@correo.com"
+                                        style="flex: 1; margin: 0; display: none;">
+                                </div>
                             </div>
-                            <button type="button" class="cta-button primary-glow w-100 next-step mt-1" data-next="2"
-                                style="margin-top: 1.5rem;">Agendar llamada</button>
+                            <button type="button" class="cta-button secondary-glass w-100 next-step mt-1" data-next="2"
+                                style="margin-top: 1.5rem; border-color: #f97316 !important;">Agendar llamada</button>
                         </div>
 
                         <!-- Step 2: Date/Time -->
                         <div class="form-step" id="step-2">
                             <div class="form-group">
-                                <label for="date">¿Qué día te viene bien?</label>
-                                <input type="text" id="date" name="date" class="custom-date-picker" required
-                                    placeholder="Selecciona una fecha">
+                                <label>¿Qué día te viene bien?</label>
+                                <div class="date-options" id="date-options"></div>
+                                <input type="hidden" id="date" name="date" required>
                             </div>
-                            <div class="form-group" style="margin-top: 1rem;">
-                                <label for="time">¿A qué hora?</label>
-                                <input type="text" id="time" name="time" class="custom-time-picker" required
-                                    placeholder="Selecciona una hora">
+                            <div class="form-group" id="time-group" style="margin-top: 1.2rem; display: none;">
+                                <label>¿A qué hora?</label>
+                                <div id="time-toggle" style="display: none; gap: 8px; margin-bottom: 12px;">
+                                    <div class="time-group-label" data-period="morning">Mañana</div>
+                                    <div class="time-group-label" data-period="afternoon">Tarde</div>
+                                </div>
+                                <div class="time-groups" id="time-groups"></div>
+                                <input type="hidden" id="time" name="time" required>
                             </div>
                             <div class="d-flex gap-1" style="margin-top: 1.5rem;">
                                 <button type="button" class="cta-button secondary-glass prev-step"
                                     data-prev="1">Atrás</button>
-                                <button type="button" class="cta-button primary-glow w-100 next-step"
-                                    data-next="3">Siguiente</button>
+                                <button type="button" class="cta-button secondary-glass w-100 next-step"
+                                    data-next="3" style="border-color: #f97316 !important;">Siguiente</button>
                             </div>
                         </div>
 
@@ -609,7 +1053,7 @@
                             <div class="d-flex gap-1" style="margin-top: 1.5rem;">
                                 <button type="button" class="cta-button secondary-glass prev-step"
                                     data-prev="2">Atrás</button>
-                                <button type="submit" class="cta-button primary-glow w-100">Confirmar cita</button>
+                                <button type="submit" class="cta-button w-100" style="background: linear-gradient(135deg, #f97316, #fb923c); border: none; box-shadow: 0 0 20px rgba(249, 115, 22, 0.4); color: white;">Confirmar cita</button>
                             </div>
                         </div>
 
@@ -618,10 +1062,8 @@
                             <div class="success-content text-center">
                                 <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
                                 <h3>¡Cita agendada!</h3>
-                                <p>Recibirás un mensaje de confirmación pronto. Estaré listo para platicar contigo en la
-                                    fecha seleccionada.</p>
-                                <button type="button" class="cta-button secondary-glass mt-1"
-                                    onclick="location.reload()">Regresar</button>
+                                <p>Recibirás un mensaje de confirmación pronto.</p>
+                                <p id="confirm-message" style="margin-top: 1rem; color: rgba(255,255,255,0.8); font-size: 0.95rem;"></p>
                             </div>
                         </div>
                     </form>
@@ -666,7 +1108,7 @@
                     const currentStep = btn.closest('.form-step');
 
                     // Basic validation for current step
-                    const inputs = currentStep.querySelectorAll('input, select, textarea');
+                    const inputs = currentStep.querySelectorAll('input:not([type="hidden"]), select, textarea');
                     let isValid = true;
                     inputs.forEach(input => {
                         if (!input.checkValidity()) {
@@ -674,6 +1116,22 @@
                             isValid = false;
                         }
                     });
+
+                    // Check hidden inputs (date/time)
+                    if (isValid) {
+                        const hiddenInputs = currentStep.querySelectorAll('input[type="hidden"][required]');
+                        hiddenInputs.forEach(input => {
+                            if (!input.value) {
+                                isValid = false;
+                                // Highlight the selector container
+                                const container = input.previousElementSibling;
+                                if (container) {
+                                    container.style.border = '1px solid #ef4444';
+                                    setTimeout(() => container.style.border = '', 2000);
+                                }
+                            }
+                        });
+                    }
 
                     if (isValid) {
                         currentStep.classList.remove('active');
@@ -694,24 +1152,94 @@
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                // Here you would typically send the data to your Laravel backend
-                // For now, we'll simulate a successful submission
                 const submitBtn = form.querySelector('button[type="submit"]');
                 const originalText = submitBtn.textContent;
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Enviando...';
 
-                try {
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                const formData = new FormData(form);
 
-                    form.querySelector('.form-step.active').classList.remove('active');
-                    document.getElementById('step-success').classList.add('active');
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Build natural language confirmation
+                        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+                        const phoneVal = document.getElementById('phone').value;
+                        const emailVal = document.getElementById('email').value;
+                        const dateVal = document.getElementById('date').value;
+                        const timeVal = document.getElementById('time').value;
+                        const nameVal = document.getElementById('full_name').value;
+
+                        const [year, month, day] = dateVal.split('-');
+                        const dateObj = new Date(year, month - 1, day);
+                        const diaSemana = dias[dateObj.getDay()];
+                        const diaMes = parseInt(day);
+                        const mes = meses[dateObj.getMonth()];
+
+                        const [hours, minutes] = timeVal.split(':');
+                        const h = parseInt(hours);
+                        const ampm = h >= 12 ? 'de la tarde' : 'de la mañana';
+                        const h12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+                        const horaNatural = minutes === '00'
+                            ? `${h12} ${ampm}`
+                            : `${h12}:${minutes} ${ampm}`;
+
+                        const esTelefono = document.getElementById('phone').style.display !== 'none';
+                        const contacto = esTelefono ? phoneVal : emailVal;
+                        const tipoContacto = esTelefono ? 'al' : 'al correo';
+
+                        const esc = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                        const msg = `¡Listo <strong>${esc(nameVal)}</strong>! Te contactaré ${tipoContacto} <strong>${esc(contacto)}</strong> para tener una charla el <strong>${diaSemana} ${diaMes} de ${mes}</strong> a las <strong>${horaNatural}</strong>.`;
+                        document.getElementById('confirm-message').innerHTML = msg;
+
+                        form.querySelector('.form-step.active').classList.remove('active');
+                        document.getElementById('step-success').classList.add('active');
+                    } else {
+                        throw new Error('Error');
+                    }
                 } catch (error) {
                     alert('Hubo un error al procesar tu solicitud. Por favor intenta de nuevo.');
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
                 }
+            });
+
+            // Toggle phone/email
+            const toggleBtns = document.querySelectorAll('.toggle-option');
+            const phoneInput = document.getElementById('phone');
+            const emailInput = document.getElementById('email');
+            const contactLabel = document.getElementById('contact-label');
+
+            toggleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    toggleBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    if (btn.dataset.mode === 'phone') {
+                        phoneInput.style.display = '';
+                        emailInput.style.display = 'none';
+                        phoneInput.required = true;
+                        emailInput.required = false;
+                        emailInput.value = '';
+                        contactLabel.textContent = 'Tu número de teléfono';
+                    } else {
+                        phoneInput.style.display = 'none';
+                        emailInput.style.display = '';
+                        phoneInput.required = false;
+                        emailInput.required = true;
+                        phoneInput.value = '';
+                        contactLabel.textContent = 'Tu correo electrónico';
+                    }
+                });
             });
 
             // Interactive Services Script
@@ -843,6 +1371,7 @@
 
                 const section = document.getElementById('servicios');
                 const selectionList = document.querySelector('.service-selection-list');
+                const isMobile = window.innerWidth <= 992;
 
                 // Initial position at center
                 const rect = section.getBoundingClientRect();
@@ -851,50 +1380,72 @@
                 let mouseX = targetX;
                 let mouseY = targetY;
 
+                // Position sphere at bottom-right on mobile
+                if (isMobile) {
+                    container.style.left = 'auto';
+                    container.style.right = '-120px';
+                    container.style.top = 'auto';
+                    container.style.bottom = '-120px';
+                    container.style.transform = 'none';
+                    if (sphereGlow) {
+                        sphereGlow.style.left = 'auto';
+                        sphereGlow.style.right = '-120px';
+                        sphereGlow.style.top = 'auto';
+                        sphereGlow.style.bottom = '-120px';
+                        sphereGlow.style.transform = 'none';
+                    }
+                }
+
                 let isHoveringSelection = false;
 
-                section.addEventListener('mousemove', (e) => {
-                    if (isHoveringSelection) return;
-
-                    const rect = section.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-
-                    targetX = x;
-                    targetY = y;
-                });
-
-                // Toggle between custom sphere cursor and system cursor
-                selectionList.addEventListener('mouseenter', () => {
-                    isHoveringSelection = true;
-                    section.style.cursor = 'auto';
-                    // The sphere remains visible but frozen in its last position
-                });
-
-                selectionList.addEventListener('mouseleave', () => {
-                    isHoveringSelection = false;
+                if (!isMobile) {
                     section.style.cursor = 'none';
-                });
 
-                section.addEventListener('mouseleave', () => {
-                    hoverTarget = 0;
-                });
+                    section.addEventListener('mousemove', (e) => {
+                        if (isHoveringSelection) return;
+
+                        const rect = section.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+
+                        targetX = x;
+                        targetY = y;
+                    });
+
+                    // Toggle between custom sphere cursor and system cursor
+                    selectionList.addEventListener('mouseenter', () => {
+                        isHoveringSelection = true;
+                        section.style.cursor = 'auto';
+                        // The sphere remains visible but frozen in its last position
+                    });
+
+                    selectionList.addEventListener('mouseleave', () => {
+                        isHoveringSelection = false;
+                        section.style.cursor = 'none';
+                    });
+
+                    section.addEventListener('mouseleave', () => {
+                        hoverTarget = 0;
+                    });
+                }
 
                 // Animation loop
                 let hoverTarget = 0;
                 function animate(time) {
                     material.uniforms.uTime.value = time * 0.001;
 
-                    // Smooth mouse follow (lerp)
-                    mouseX += (targetX - mouseX) * 0.15; // Faster follow for cursor feel
-                    mouseY += (targetY - mouseY) * 0.15;
+                    if (!isMobile) {
+                        // Smooth mouse follow (lerp)
+                        mouseX += (targetX - mouseX) * 0.15;
+                        mouseY += (targetY - mouseY) * 0.15;
 
-                    // Direct position follow
-                    container.style.left = `${mouseX}px`;
-                    container.style.top = `${mouseY}px`;
-                    if (sphereGlow) {
-                        sphereGlow.style.left = `${mouseX}px`;
-                        sphereGlow.style.top = `${mouseY}px`;
+                        // Direct position follow
+                        container.style.left = `${mouseX}px`;
+                        container.style.top = `${mouseY}px`;
+                        if (sphereGlow) {
+                            sphereGlow.style.left = `${mouseX}px`;
+                            sphereGlow.style.top = `${mouseY}px`;
+                        }
                     }
 
                     // Smooth hover transition
@@ -965,6 +1516,7 @@
                             // Update button styles dynamically
                             detailButton.style.setProperty('--item-color', hexColor);
                             detailButton.style.setProperty('--item-glow', hexColor + '44');
+                            detailButton.style.setProperty('--item-text-color', item.getAttribute('data-text') || '#ffffff');
 
                             if (progress < 1) requestAnimationFrame(updateUniforms);
                         }
@@ -988,28 +1540,186 @@
         });
     </script>
 
-    <!-- Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            flatpickr(".custom-date-picker", {
-                locale: "es",
-                minDate: "today",
-                altInput: true,
-                altFormat: "F j, Y",
-                dateFormat: "Y-m-d",
-                disableMobile: true // Prevents native UI on mobile so custom is always used
+            const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const dateContainer = document.getElementById('date-options');
+            const dateInput = document.getElementById('date');
+            const today = new Date();
+
+            // Generate next 8 days (skip Sundays)
+            for (let i = 1; i <= 21; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                if (d.getDay() === 0) continue; // Skip Sunday
+                if (dateContainer.children.length >= 8) break;
+
+                const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                const btn = document.createElement('div');
+                btn.className = 'date-option';
+                btn.dataset.date = dateStr;
+                btn.innerHTML = `<div class="date-day">${dias[d.getDay()]}</div><div class="date-num">${d.getDate()}</div><div class="date-month">${meses[d.getMonth()]}</div>`;
+                btn.addEventListener('click', function () {
+                    dateContainer.querySelectorAll('.date-option').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    dateInput.value = this.dataset.date;
+                    // Show time group and toggle, reset only the time slot (keep the period selected)
+                    document.getElementById('time-group').style.display = '';
+                    document.getElementById('time-toggle').style.display = 'flex';
+                    timeContainer.querySelectorAll('.time-option').forEach(b => b.classList.remove('active'));
+                    timeInput.value = '';
+                    // If a period is still active, keep showing its options
+                    const activePeriod = document.querySelector('#time-toggle .time-group-label.active');
+                    if (activePeriod) {
+                        const period = activePeriod.dataset.period;
+                        timeContainer.querySelectorAll('.time-period').forEach(p => {
+                            p.classList.toggle('active', p.dataset.period === period);
+                        });
+                    }
+                });
+                dateContainer.appendChild(btn);
+            }
+
+            // Time slots
+            const timeGroups = [
+                { label: 'Mañana', key: 'morning', hours: [9, 10, 11] },
+                { label: 'Tarde', key: 'afternoon', hours: [14, 15, 16, 17] },
+            ];
+            const timeContainer = document.getElementById('time-groups');
+            const timeInput = document.getElementById('time');
+
+            timeGroups.forEach(group => {
+                const period = document.createElement('div');
+                period.className = 'time-period';
+                period.dataset.period = group.key;
+
+                const row = document.createElement('div');
+                row.className = 'date-options';
+
+                group.hours.forEach(h => {
+                    const h12 = h > 12 ? h - 12 : h;
+                    const ampm = h >= 12 ? 'pm' : 'am';
+                    const timeStr = String(h).padStart(2, '0') + ':00';
+
+                    const btn = document.createElement('div');
+                    btn.className = 'time-option';
+                    btn.dataset.time = timeStr;
+                    btn.textContent = h12 + ampm;
+                    btn.addEventListener('click', function () {
+                        timeContainer.querySelectorAll('.time-option').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        timeInput.value = this.dataset.time;
+                    });
+                    row.appendChild(btn);
+                });
+
+                period.appendChild(row);
+                timeContainer.appendChild(period);
             });
-            flatpickr(".custom-time-picker", {
-                enableTime: true,
-                noCalendar: true,
-                dateFormat: "H:i",
-                time_24hr: false,
-                altInput: true,
-                altFormat: "h:i K",
-                disableMobile: true // Prevents native UI on mobile so custom is always used
+
+            // Time period toggle
+            document.querySelectorAll('#time-toggle .time-group-label').forEach(label => {
+                label.addEventListener('click', function () {
+                    const period = this.dataset.period;
+                    document.querySelectorAll('#time-toggle .time-group-label').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    timeContainer.querySelectorAll('.time-period').forEach(p => {
+                        p.classList.toggle('active', p.dataset.period === period);
+                    });
+                    timeInput.value = '';
+                });
             });
+        });
+    </script>
+
+    <script>
+        // Project Modal
+        const linkIcons = {
+            'website': 'fa-solid fa-globe',
+            'github': 'fa-brands fa-github',
+            'demo': 'fa-solid fa-arrow-up-right-from-square',
+            'figma': 'fa-brands fa-figma',
+            'npm': 'fa-brands fa-npm',
+            'behance': 'fa-brands fa-behance',
+            'other': 'fa-solid fa-link',
+        };
+
+        function openProjectModal(el) {
+            const overlay = document.getElementById('projectModal');
+            const name = el.dataset.name;
+            const desc = el.dataset.description;
+            const images = el.dataset.images ? el.dataset.images.split(',').filter(Boolean) : [];
+            const techs = el.dataset.techs ? el.dataset.techs.split(',').filter(Boolean) : [];
+            let links = [];
+            try { links = JSON.parse(el.dataset.links || '[]'); } catch (e) {}
+
+            document.getElementById('modalTitle').textContent = name;
+            document.getElementById('modalDesc').textContent = desc;
+
+            // Gallery
+            const gallery = document.getElementById('modalGallery');
+            gallery.innerHTML = '';
+            images.forEach(src => {
+                const img = document.createElement('img');
+                img.src = '/storage/' + src;
+                img.alt = name;
+                gallery.appendChild(img);
+            });
+
+            // Techs
+            const techsEl = document.getElementById('modalTechs');
+            techsEl.innerHTML = '';
+            techs.forEach(t => {
+                const span = document.createElement('span');
+                span.textContent = t;
+                techsEl.appendChild(span);
+            });
+
+            // Links
+            const linksEl = document.getElementById('modalLinks');
+            linksEl.innerHTML = '';
+            const linkLabels = {
+                'behance': 'Ver proyecto en Behance',
+            };
+            links.forEach(link => {
+                const a = document.createElement('a');
+                a.href = link.url || '#';
+                a.target = '_blank';
+                a.rel = 'noopener';
+                const icon = linkIcons[link.type] || 'fa-solid fa-link';
+                const label = linkLabels[link.type] || null;
+                if (label) {
+                    a.innerHTML = '<i class="' + icon + '"></i><span>' + label + '</span>';
+                    a.style.width = 'auto';
+                    a.style.borderRadius = '50px';
+                    a.style.padding = '0 16px';
+                    a.style.gap = '8px';
+                    a.style.fontSize = '0.8rem';
+                    a.style.fontWeight = '500';
+                    a.style.whiteSpace = 'nowrap';
+                } else {
+                    a.innerHTML = '<i class="' + icon + '"></i>';
+                }
+                a.title = (link.type || 'link').charAt(0).toUpperCase() + (link.type || 'link').slice(1);
+                linksEl.appendChild(a);
+            });
+
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('projectModal').addEventListener('click', function (e) {
+            if (e.target === this) closeProjectModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeProjectModal();
         });
     </script>
 </body>
