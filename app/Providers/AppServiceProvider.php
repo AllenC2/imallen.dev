@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         FilamentAsset::register([
-            Css::make('ios-overrides'),
+            Css::make('ios-overrides', base_path('public/css/app/ios-overrides.css')),
         ], package: 'app');
     }
 }
