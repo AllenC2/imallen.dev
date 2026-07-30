@@ -2,7 +2,8 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Http\Middleware\Authenticate;
+use App\Http\Middleware\CustomFilamentAuthenticate;
+use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -28,8 +29,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->brandLogo('/storage/logos/logo_imallendev_horizontal.svg')
             ->brandLogoHeight('2rem')
-            ->login()
+            ->font('Plus Jakarta Sans', 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap', GoogleFontProvider::class)
             ->breadcrumbs(false)
+            ->defaultThemeMode(\Filament\Enums\ThemeMode::Light)
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -55,7 +57,7 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                CustomFilamentAuthenticate::class,
             ]);
     }
 }

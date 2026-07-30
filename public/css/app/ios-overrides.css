@@ -1,0 +1,157 @@
+/* ──────────────────────────────────────────────────────────
+   iOS / Apple Light Theme overrides for Filament Admin Panel
+   Loaded after Filament's default theme to override styles
+   ────────────────────────────────────────────────────────── */
+
+/* Typography: use Plus Jakarta Sans everywhere in the admin */
+.fi-app,
+.fi-app * {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Page headings: refined typography */
+.fi-page-heading h1,
+.fi-page-heading .fi-page-heading-title {
+    letter-spacing: -0.03em;
+    font-weight: 800;
+}
+
+.fi-section .fi-section-heading h2,
+.fi-section-heading h2 {
+    letter-spacing: -0.02em;
+    font-weight: 700;
+}
+
+/* Cards: pure white, iOS-style larger radius, soft shadow */
+.fi-card {
+    background: #ffffff !important;
+    border-radius: 18px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid rgba(60, 60, 67, 0.08) !important;
+}
+
+/* Sidebar: frosted glass background */
+.fi-sidebar,
+.fi-app .fi-sidebar {
+    background: rgba(249, 250, 251, 0.85) !important;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Top bar: frosted glass */
+.fi-topbar,
+.fi-app .fi-topbar {
+    background: rgba(249, 250, 251, 0.85) !important;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(60, 60, 67, 0.12) !important;
+}
+
+/* Buttons: rounded iOS pill style */
+.fi-btn {
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+}
+
+/* Primary button: dark filled style (iOS filled style) */
+.fi-btn-color-primary,
+.fi-btn.fi-btn-color-primary {
+    background-color: #1d1d1f !important;
+    color: #ffffff !important;
+}
+.fi-btn-color-primary:hover {
+    background-color: #2a2a2c !important;
+}
+
+/* Form inputs: iOS light gray filled style */
+.fi-fo-text-input input,
+.fi-fo-text-input,
+.fi-fo-textarea,
+.fi-fo-select select,
+.fi-fo-select {
+    border-radius: 12px !important;
+    border-color: rgba(60, 60, 67, 0.12) !important;
+    background: #f5f5f7 !important;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.fi-fo-text-input:focus-within,
+.fi-fo-text-input input:focus,
+.fi-fo-select:focus-within,
+.fi-fo-textarea:focus-within {
+    background: #ffffff !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12) !important;
+}
+
+/* Nav items: iOS settings-list rounded style */
+.fi-sidebar-nav-item-link,
+.fi-sidebar-nav-item {
+    border-radius: 12px !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em;
+    transition: background 0.12s ease;
+}
+
+/* Active nav item: amber accent */
+.fi-sidebar-nav-item-active .fi-sidebar-nav-item-link,
+.fi-sidebar-nav-item-active::before {
+    background: rgba(245, 158, 11, 0.12) !important;
+}
+
+/* Tabular tables: iOS list style headers */
+.fi-table th {
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    letter-spacing: 0.04em !important;
+    color: #86868b !important;
+    font-weight: 600 !important;
+}
+
+.fi-table td,
+.fi-table tr {
+    border-color: rgba(60, 60, 67, 0.08) !important;
+}
+
+/* Badges: pill shape */
+.fi-badge {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+}
+
+/* Tiptap editor: iOS input style */
+.tiptap.ProseMirror,
+.filament-tiptap-editor .ProseMirror {
+    background: #ffffff;
+    border-radius: 12px;
+    border-color: rgba(60, 60, 67, 0.12);
+}
+
+/* Cards on dashboard widgets */
+.fi-widget,
+.fi-welcome-widget {
+    border-radius: 18px !important;
+    border: 1px solid rgba(60, 60, 67, 0.08) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Login screen (Filament built-in if visible) */
+.fi-login-screen,
+.fi-login-screen .fi-login {
+    background: #f5f5f7 !important;
+}
+
+.fi-login-card {
+    background: #ffffff !important;
+    border-radius: 28px !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.10), 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+    border: none !important;
+}
+
+/* Brand logo: subtle */
+.fi-brand-logo,
+.fi-topbar .fi-brand-logo img {
+    opacity: 0.9;
+}
