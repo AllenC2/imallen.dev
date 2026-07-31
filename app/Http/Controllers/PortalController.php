@@ -12,7 +12,7 @@ class PortalController extends Controller
 
         $expedientes = $user->expedientes()
             ->with(['movimientos' => function ($q) {
-                $q->orderBy('fecha', 'desc');
+                $q->orderBy('fecha', 'asc');
             }])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -26,8 +26,8 @@ class PortalController extends Controller
 
         $expediente = $user->expedientes()
             ->with(['movimientos' => function ($q) {
-                $q->orderBy('fecha', 'desc');
-            }])
+                $q->orderBy('fecha', 'asc');
+            }, 'documentos'])
             ->findOrFail($id);
 
         return view('portal.show', ['user' => $user, 'expediente' => $expediente]);

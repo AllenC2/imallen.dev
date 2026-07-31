@@ -196,6 +196,7 @@ class ExpedienteResource extends Resource
     {
         return [
             RelationManagers\MovimientosRelationManager::class,
+            RelationManagers\DocumentosRelationManager::class,
         ];
     }
 

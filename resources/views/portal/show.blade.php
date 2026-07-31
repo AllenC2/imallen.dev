@@ -59,14 +59,18 @@
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border-bottom: 0.5px solid var(--separator);
         }
-        .navbar-brand {
-            font-size: 17px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
+        .navbar-left,
+        .navbar-right {
+            width: 80px;
+            display: flex;
+            align-items: center;
         }
-        .navbar-brand span { color: var(--accent); }
-
-        .nav-actions { display: flex; align-items: center; gap: 10px; }
+        .navbar-right { justify-content: flex-end; }
+        .navbar-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
 
         .back-btn {
             display: flex;
@@ -144,11 +148,61 @@
             padding-bottom: calc(40px + var(--safe-bottom));
         }
 
+        @media (min-width: 1024px) {
+            main {
+                max-width: 1200px;
+                padding: 0 40px calc(40px + var(--safe-bottom));
+            }
+            .expediente-grid {
+                display: grid;
+                grid-template-columns: 1fr 380px;
+                gap: 32px;
+                align-items: start;
+            }
+            .expediente-col-left {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+            }
+            .expediente-col-right {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+                position: sticky;
+                top: calc(var(--safe-top) + 80px);
+            }
+            .movimientos-section,
+            .saldo-section,
+            .pago-section {
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .docs-section {
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .hero-cover {
+                border-radius: 22px;
+                margin-bottom: 0;
+            }
+        }
+
+        @media (min-width: 1440px) {
+            main {
+                max-width: 1400px;
+            }
+            .expediente-grid {
+                grid-template-columns: 1fr 440px;
+                gap: 40px;
+            }
+        }
+
         .hero-cover {
             width: 100%;
             aspect-ratio: 16 / 10;
             overflow: hidden;
             background: linear-gradient(135deg, #e8e8ed, #d1d1d6);
+            margin-bottom: 24px;
         }
         .hero-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
@@ -287,8 +341,93 @@
         .pago-btn:active { transform: scale(0.97); opacity: 0.85; }
         .pago-btn svg { width: 18px; height: 18px; }
 
+        /* ── Documentos carousel ── */
+        .docs-section { padding: 0 20px; margin-bottom: 24px; }
+        .docs-carousel {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .docs-carousel::-webkit-scrollbar { display: none; }
+        .doc-card {
+            flex: 0 0 220px;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--surface);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 0.5px solid var(--separator);
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .doc-card:active { transform: scale(0.97); }
+        .doc-thumb {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            background: linear-gradient(135deg, #f2f2f7 0%, #e5e5ea 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .doc-thumb canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        .doc-thumb-placeholder {
+            color: var(--text-tertiary);
+            opacity: 0.5;
+        }
+        .doc-thumb-placeholder svg { width: 32px; height: 32px; }
+        .doc-body {
+            padding: 0 18px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+        .doc-icon {
+            display: none;
+        }
+        .doc-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            word-break: break-word;
+        }
+        .doc-meta {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+        .doc-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: auto;
+        }
+        .doc-download svg { width: 14px; height: 14px; }
+
         /* ── Movimientos ── */
-        .movimientos-section { padding: 0 20px; }
+        .movimientos-section { padding: 0 20px; margin-bottom: 24px; }
         .section-title {
             font-size: 22px;
             font-weight: 800;
@@ -523,13 +662,20 @@
 
 <body>
     <nav class="navbar">
-        <a href="{{ route('portal.index') }}" class="back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            Portal
-        </a>
-        <button class="avatar-btn" id="avatarBtn">{{ strtoupper(substr($user->name, 0, 1)) }}</button>
+        <div class="navbar-left">
+            <a href="{{ route('portal.index') }}" class="back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Volver
+            </a>
+        </div>
+        <div class="navbar-center">
+            <x-logo height="22" color="#f59e0b" />
+        </div>
+        <div class="navbar-right">
+            <button class="avatar-btn" id="avatarBtn">{{ strtoupper(substr($user->name, 0, 1)) }}</button>
+        </div>
     </nav>
 
     <div class="popover-overlay" id="popoverOverlay"></div>
@@ -559,109 +705,158 @@
             </div>
         @endif
 
-        <div class="hero-content">
-            <h1 class="hero-title">{{ $expediente->titulo }}</h1>
-            @if ($expediente->descripcion)
-                <p class="hero-desc">{{ $expediente->descripcion }}</p>
-            @endif
-        </div>
-
-        @if ($expediente->contenido)
-            <div class="content-body">
-                {!! $expediente->contenido !!}
-            </div>
-        @endif
-
-        @php
-            $saldo = $expediente->saldo;
-            $saldoClass = $saldo > 0 ? 'positive' : ($saldo < 0 ? 'negative' : 'neutral');
-        @endphp
-        <div class="saldo-section">
-            <div class="saldo-card">
-                <div>
-                    <div class="saldo-label">Saldo</div>
-                    <div class="saldo-sub">{{ $expediente->movimientos->count() }} movimiento{{ $expediente->movimientos->count() === 1 ? '' : 's' }}</div>
+        <div class="expediente-grid">
+            <div class="expediente-col-left">
+                <div class="hero-content">
+                    <h1 class="hero-title">{{ $expediente->titulo }}</h1>
+                    @if ($expediente->descripcion)
+                        <p class="hero-desc">{{ $expediente->descripcion }}</p>
+                    @endif
                 </div>
-                <div class="saldo-value {{ $saldoClass }}">
-                    @if ($saldo > 0)+@endif $ {{ number_format(abs($saldo), 2) }}
-                </div>
-            </div>
-        </div>
 
-        @if ($expediente->enlace_opcion_pago)
-            <div class="pago-section">
-                <div class="pago-card">
-                    <div class="pago-header">
-                        <div class="pago-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                                <line x1="1" y1="10" x2="23" y2="10"/>
-                            </svg>
-                        </div>
-                        <h3 class="pago-title">{{ $expediente->titulo_opcion_pago ?? 'Pagar' }}</h3>
+                @if ($expediente->contenido)
+                    <div class="content-body">
+                        {!! $expediente->contenido !!}
                     </div>
-                    @if ($expediente->descripcion_opcion_pago)
-                        <p class="pago-desc">{{ $expediente->descripcion_opcion_pago }}</p>
-                    @endif
-                    @if ($expediente->cantidad_opcion_pago)
-                        <div class="pago-amount">
-                            <span class="pago-amount-currency">$</span>
-                            <span class="pago-amount-value">{{ number_format($expediente->cantidad_opcion_pago, 2) }}</span>
-                        </div>
-                    @endif
-                    <a href="{{ $expediente->enlace_opcion_pago }}" target="_blank" rel="noopener noreferrer" class="pago-btn">
-                        Pagar ahora
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="5" y1="12" x2="19" y2="12"/>
-                            <polyline points="12 5 19 12 12 19"/>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-        @endif
+                @endif
 
-        <div class="movimientos-section">
-            <h2 class="section-title">Movimientos</h2>
-            @if ($expediente->movimientos->isEmpty())
-                <div class="empty-block">
-                    <p>No hay movimientos registrados.</p>
-                </div>
-            @else
-                <div class="movimientos-list">
-                    @foreach ($expediente->movimientos as $mov)
-                        @php $isPago = $mov->tipo->value === 'Pago'; @endphp
-                        <div class="mov-item"
-                             data-tipo="{{ $mov->tipo->value }}"
-                             data-nombre="{{ $isPago ? 'Pago recibido' : 'Cargo aplicado' }}"
-                             data-monto="{{ number_format($mov->monto, 2) }}"
-                             data-fecha="{{ $mov->fecha->format('d/m/Y') }}"
-                             data-descripcion="{{ $mov->descripcion ?? '' }}"
-                             data-creado="{{ $mov->created_at->format('d/m/Y H:i') }}">
-                            <div class="mov-icon {{ $isPago ? 'pago' : 'cargo' }}">
-                                @if ($isPago)
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="6 9 12 15 18 9" transform="rotate(180 12 12)"/>
-                                    </svg>
-                                @else
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="6 9 12 15 18 9"/>
-                                    </svg>
-                                @endif
-                            </div>
-                            <div class="mov-info">
-                                <div class="mov-type">{{ $mov->tipo->value }}</div>
-                                <div class="mov-desc">{{ $mov->descripcion ?? 'Sin descripción' }}</div>
-                            </div>
-                            <div class="mov-right">
-                                <div class="mov-amount {{ $isPago ? 'pago' : 'cargo' }}">
-                                    {{ $isPago ? '+' : '-' }} $ {{ number_format($mov->monto, 2) }}
-                                </div>
-                                <div class="mov-date">{{ $mov->fecha->format('d/m/Y') }}</div>
-                            </div>
+                @if ($expediente->documentos->isNotEmpty())
+                    <div class="docs-section">
+                        <h2 class="section-title">Documentos</h2>
+                        <div class="docs-carousel">
+                            @foreach ($expediente->documentos as $doc)
+                                @php
+                                    $bytes = $doc->tamanio_bytes;
+                                    $size = $bytes >= 1048576
+                                        ? round($bytes / 1048576, 1).' MB'
+                                        : ($bytes >= 1024
+                                            ? round($bytes / 1024, 1).' KB'
+                                            : $bytes.' B');
+                                @endphp
+                                <a href="{{ Storage::disk('public')->url($doc->ruta) }}" target="_blank" rel="noopener noreferrer" class="doc-card" data-pdf-url="{{ Storage::disk('public')->url($doc->ruta) }}">
+                                    <div class="doc-thumb">
+                                        <canvas data-pdf-thumb></canvas>
+                                        <div class="doc-thumb-placeholder">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                <polyline points="14 2 14 8 20 8"/>
+                                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="doc-body">
+                                        <div class="doc-name">{{ $doc->nombre_original }}</div>
+                                        <div class="doc-meta">{{ $size }}</div>
+                                        <div class="doc-download">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                <polyline points="7 10 12 15 17 10"/>
+                                                <line x1="12" y1="15" x2="12" y2="3"/>
+                                            </svg>
+                                            Descargar
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
                         </div>
-                    @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <div class="expediente-col-right">
+                <div class="movimientos-section">
+                    <h2 class="section-title">Registro de Cuentas</h2>
+                    @if ($expediente->movimientos->isEmpty())
+                        <div class="empty-block">
+                            <p>No hay movimientos registrados.</p>
+                        </div>
+                    @else
+                        <div class="movimientos-list">
+                            @foreach ($expediente->movimientos as $mov)
+                                @php $isPago = $mov->tipo->value === 'Pago'; @endphp
+                                <div class="mov-item"
+                                     data-tipo="{{ $mov->tipo->value }}"
+                                     data-nombre="{{ $isPago ? 'Pago recibido' : 'Cargo aplicado' }}"
+                                     data-monto="{{ number_format($mov->monto, 2) }}"
+                                     data-fecha="{{ $mov->fecha->format('d/m/Y') }}"
+                                     data-descripcion="{{ $mov->descripcion ?? '' }}"
+                                     data-creado="{{ $mov->created_at->format('d/m/Y H:i') }}">
+                                    <div class="mov-icon {{ $isPago ? 'pago' : 'cargo' }}">
+                                        @if ($isPago)
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="6 9 12 15 18 9" transform="rotate(180 12 12)"/>
+                                            </svg>
+                                        @else
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="6 9 12 15 18 9"/>
+                                            </svg>
+                                        @endif
+                                    </div>
+                                    <div class="mov-info">
+                                        <div class="mov-type">{{ $mov->tipo->value }}</div>
+                                        <div class="mov-desc">{{ $mov->descripcion ?? 'Sin descripción' }}</div>
+                                    </div>
+                                    <div class="mov-right">
+                                        <div class="mov-amount {{ $isPago ? 'pago' : 'cargo' }}">
+                                            {{ $isPago ? '+' : '-' }} $ {{ number_format($mov->monto, 2) }}
+                                        </div>
+                                        <div class="mov-date">{{ $mov->fecha->format('d/m/Y') }}</div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
-            @endif
+
+                @php
+                    $saldo = $expediente->saldo;
+                    $saldoClass = $saldo > 0 ? 'positive' : ($saldo < 0 ? 'negative' : 'neutral');
+                @endphp
+                <div class="saldo-section">
+                    <div class="saldo-card">
+                        <div>
+                            <div class="saldo-label">Saldo Total</div>
+                            <div class="saldo-sub">{{ $expediente->movimientos->count() }} movimiento{{ $expediente->movimientos->count() === 1 ? '' : 's' }}</div>
+                        </div>
+                        <div class="saldo-value {{ $saldoClass }}">
+                            @if ($saldo > 0)+@endif $ {{ number_format(abs($saldo), 2) }}
+                        </div>
+                    </div>
+                </div>
+
+                @if ($expediente->enlace_opcion_pago)
+                    <div class="pago-section">
+                        <div class="pago-card">
+                            <div class="pago-header">
+                                <div class="pago-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                        <line x1="1" y1="10" x2="23" y2="10"/>
+                                    </svg>
+                                </div>
+                                <h3 class="pago-title">{{ $expediente->titulo_opcion_pago ?? 'Pagar' }}</h3>
+                            </div>
+                            @if ($expediente->descripcion_opcion_pago)
+                                <p class="pago-desc">{{ $expediente->descripcion_opcion_pago }}</p>
+                            @endif
+                            @if ($expediente->cantidad_opcion_pago)
+                                <div class="pago-amount">
+                                    <span class="pago-amount-currency">$</span>
+                                    <span class="pago-amount-value">{{ number_format($expediente->cantidad_opcion_pago, 2) }}</span>
+                                </div>
+                            @endif
+                            <a href="{{ $expediente->enlace_opcion_pago }}" target="_blank" rel="noopener noreferrer" class="pago-btn">
+                                Pagar ahora
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                    <polyline points="12 5 19 12 12 19"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                @endif
+            </div>
         </div>
     </main>
 
@@ -751,6 +946,45 @@
 
         function closeMovModal() { movModal.classList.remove('open'); }
         movModal.addEventListener('click', (e) => { if (e.target === movModal) closeMovModal(); });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
+    <script type="module">
+        import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
+
+        document.querySelectorAll('.doc-card[data-pdf-url]').forEach(async (card) => {
+            const url = card.dataset.pdfUrl;
+            const canvas = card.querySelector('[data-pdf-thumb]');
+            const placeholder = card.querySelector('.doc-thumb-placeholder');
+
+            if (!canvas || !url) return;
+
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                const pdf = await loadingTask.promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 1 });
+
+                const containerWidth = canvas.parentElement.offsetWidth || 220;
+                const scale = (containerWidth * 2) / viewport.width;
+                const scaledViewport = page.getViewport({ scale });
+
+                canvas.width = scaledViewport.width;
+                canvas.height = scaledViewport.height;
+
+                await page.render({
+                    canvasContext: canvas.getContext('2d'),
+                    viewport: scaledViewport,
+                }).promise;
+
+                if (placeholder) placeholder.style.display = 'none';
+                canvas.style.display = 'block';
+            } catch (e) {
+                canvas.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'flex';
+            }
+        });
     </script>
 </body>
 

@@ -167,32 +167,76 @@
         /* ── Main ── */
         main {
             padding: 28px 20px calc(40px + var(--safe-bottom));
-            max-width: 560px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-greeting {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
+        }
+        .page-greeting-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
         .page-title {
-            font-size: 34px;
+            font-size: 38px;
             font-weight: 800;
-            letter-spacing: -0.03em;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            margin-bottom: 8px;
+        }
+        .page-title-greeting {
+            display: block;
+            background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+        .page-title-name {
+            display: block;
+            font-size: 46px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
             color: var(--text);
-            margin-bottom: 6px;
-            line-height: 1.1;
+            -webkit-text-fill-color: var(--text);
         }
 
         .page-subtitle {
             font-size: 15px;
             color: var(--text-secondary);
             font-weight: 400;
-            margin-bottom: 28px;
-            line-height: 1.4;
+            line-height: 1.45;
+        }
+        .page-subtitle strong {
+            color: var(--text);
+            font-weight: 700;
         }
 
         /* ── Cards ── */
         .cards-list {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 16px;
+        }
+
+        @media (min-width: 1024px) {
+            .cards-list { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 1440px) {
+            .cards-list { grid-template-columns: repeat(3, 1fr); }
         }
 
         .card {
@@ -389,11 +433,25 @@
     </div>
 
     <main>
-        <h1 class="page-title">Mis proyectos</h1>
-        <p class="page-subtitle">{{ $expedientes->count() }} expediente{{ $expedientes->count() === 1 ? '' : 's' }} asignado{{ $expedientes->count() === 1 ? '' : 's' }} a tu cuenta</p>
+        <div class="page-header">
+            @php
+                $hora = (int) date('G');
+                if ($hora < 6) { $saludo = 'Buenas noches'; $icono = '🌙'; }
+                elseif ($hora < 12) { $saludo = 'Buenos días'; $icono = '☀️'; }
+                elseif ($hora < 19) { $saludo = 'Buenas tardes'; $icono = '🌤'; }
+                else { $saludo = 'Buenas noches'; $icono = '🌙'; }
+                $fecha = \Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM');
+            @endphp
+            <div class="page-greeting"><span class="page-greeting-icon">{{ $icono }}</span> {{ $fecha }}</div>
+            <h1 class="page-title">
+                <span class="page-title-greeting">{{ $saludo }},</span>
+                <span class="page-title-name">{{ $user->name }}</span>
+            </h1>
+            <p class="page-subtitle">Tienes <strong>{{ $expedientes->count() }} expediente{{ $expedientes->count() === 1 ? '' : 's' }}</strong> asignado{{ $expedientes->count() === 1 ? '' : 's' }} a tu cuenta.</p>
+        </div>
 
         @if ($expedientes->isEmpty())
-            <div class="empty-state">
+            <div class="empty-state" style="max-width:560px;margin:0 auto;">
                 <div class="empty-state-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>

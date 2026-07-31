@@ -55,6 +55,11 @@ class Expediente extends Model
         return $this->hasMany(Movimiento::class);
     }
 
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(DocumentoPdf::class);
+    }
+
     public function getSaldoAttribute(): float
     {
         return $this->movimientos

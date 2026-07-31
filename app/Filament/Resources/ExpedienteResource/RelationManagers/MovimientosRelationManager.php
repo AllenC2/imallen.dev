@@ -46,7 +46,7 @@ class MovimientosRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('tipo')
-            ->defaultSort('fecha', 'desc')
+            ->defaultSort('fecha', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('fecha')
                     ->label('Fecha')
