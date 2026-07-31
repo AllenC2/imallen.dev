@@ -309,7 +309,10 @@
             gap: 14px;
             padding: 16px 20px;
             border-bottom: 0.5px solid var(--separator);
+            cursor: pointer;
+            transition: background 0.12s ease;
         }
+        .mov-item:active { background: var(--surface-secondary); }
         .mov-item:last-child { border-bottom: none; }
         .mov-icon {
             width: 36px;
@@ -369,6 +372,152 @@
             from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 16px calc(var(--safe-bottom) + 24px);
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .modal {
+            width: 100%;
+            max-width: 420px;
+            background: var(--surface);
+            border-radius: 28px 28px 22px 22px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transform: translateY(100%);
+            transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .modal-overlay.open .modal { transform: translateY(0); }
+
+        .modal-handle {
+            width: 36px;
+            height: 5px;
+            border-radius: 3px;
+            background: var(--text-tertiary);
+            margin: 10px auto 0;
+            opacity: 0.5;
+        }
+
+        .modal-header {
+            padding: 20px 24px 16px;
+        }
+        .modal-type-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .modal-type-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .modal-type-icon.pago { background: var(--green-soft); }
+        .modal-type-icon.cargo { background: var(--red-soft); }
+        .modal-type-icon svg { width: 24px; height: 24px; }
+        .modal-type-icon.pago svg { color: var(--green); }
+        .modal-type-icon.cargo svg { color: var(--red); }
+        .modal-type-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 2px;
+        }
+        .modal-type-name {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .modal-amount {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .modal-amount-value {
+            font-size: 44px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        .modal-amount-value.pago { color: var(--green); }
+        .modal-amount-value.cargo { color: var(--red); }
+
+        .modal-divider {
+            height: 0.5px;
+            background: var(--separator);
+            margin: 0 24px;
+        }
+
+        .modal-body {
+            padding: 20px 24px 24px;
+        }
+        .modal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 12px 0;
+        }
+        .modal-row + .modal-row { border-top: 0.5px solid var(--separator); }
+        .modal-row-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            flex-shrink: 0;
+            padding-top: 1px;
+        }
+        .modal-row-value {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 600;
+            text-align: right;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-height: 240px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 15px;
+            background: var(--surface-secondary);
+            color: var(--text);
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.15s ease;
+        }
+        .modal-close:active { transform: scale(0.97); }
     </style>
 </head>
 
@@ -481,7 +630,13 @@
                 <div class="movimientos-list">
                     @foreach ($expediente->movimientos as $mov)
                         @php $isPago = $mov->tipo->value === 'Pago'; @endphp
-                        <div class="mov-item">
+                        <div class="mov-item"
+                             data-tipo="{{ $mov->tipo->value }}"
+                             data-nombre="{{ $isPago ? 'Pago recibido' : 'Cargo aplicado' }}"
+                             data-monto="{{ number_format($mov->monto, 2) }}"
+                             data-fecha="{{ $mov->fecha->format('d/m/Y') }}"
+                             data-descripcion="{{ $mov->descripcion ?? '' }}"
+                             data-creado="{{ $mov->created_at->format('d/m/Y H:i') }}">
                             <div class="mov-icon {{ $isPago ? 'pago' : 'cargo' }}">
                                 @if ($isPago)
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -510,6 +665,41 @@
         </div>
     </main>
 
+    <!-- Movimiento Modal -->
+    <div class="modal-overlay" id="movModal">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <div class="modal-type-row">
+                    <div class="modal-type-icon pago" id="movModalTypeIcon"></div>
+                    <div>
+                        <div class="modal-type-label">Movimiento</div>
+                        <div class="modal-type-name" id="movModalTypeName">—</div>
+                    </div>
+                </div>
+                <div class="modal-amount">
+                    <div class="modal-amount-value pago" id="movModalAmount">—</div>
+                </div>
+            </div>
+            <div class="modal-divider"></div>
+            <div class="modal-body">
+                <div class="modal-row">
+                    <span class="modal-row-label">Fecha</span>
+                    <span class="modal-row-value" id="movModalFecha">—</span>
+                </div>
+                <div class="modal-row">
+                    <span class="modal-row-label">Descripción</span>
+                    <span class="modal-row-value" id="movModalDesc">—</span>
+                </div>
+                <div class="modal-row">
+                    <span class="modal-row-label">Registrado</span>
+                    <span class="modal-row-value" id="movModalCreado">—</span>
+                </div>
+                <button class="modal-close" onclick="closeMovModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const avatarBtn = document.getElementById('avatarBtn');
         const popover = document.getElementById('popover');
@@ -525,6 +715,42 @@
         document.addEventListener('click', (e) => {
             if (!popover.contains(e.target) && !avatarBtn.contains(e.target)) togglePopover(false);
         });
+
+        // ── Movimiento modal ──
+        const movModal = document.getElementById('movModal');
+
+        document.querySelectorAll('.mov-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                const tipo = this.dataset.tipo;
+                const nombre = this.dataset.nombre;
+                const monto = this.dataset.monto;
+                const fecha = this.dataset.fecha;
+                const descripcion = this.dataset.descripcion;
+                const creado = this.dataset.creado;
+
+                const isPago = tipo === 'Pago';
+                const typeClass = isPago ? 'pago' : 'cargo';
+                const prefix = isPago ? '+' : '-';
+                const desc = descripcion && descripcion.trim() !== '' ? descripcion : 'Sin descripción';
+
+                const iconEl = document.getElementById('movModalTypeIcon');
+                iconEl.className = 'modal-type-icon ' + typeClass;
+                iconEl.innerHTML = isPago
+                    ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" transform="rotate(180 12 12)"/></svg>'
+                    : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+                document.getElementById('movModalTypeName').textContent = nombre;
+                document.getElementById('movModalAmount').className = 'modal-amount-value ' + typeClass;
+                document.getElementById('movModalAmount').textContent = prefix + ' $ ' + monto;
+                document.getElementById('movModalFecha').textContent = fecha;
+                document.getElementById('movModalDesc').textContent = desc;
+                document.getElementById('movModalCreado').textContent = creado;
+
+                movModal.classList.add('open');
+            });
+        });
+
+        function closeMovModal() { movModal.classList.remove('open'); }
+        movModal.addEventListener('click', (e) => { if (e.target === movModal) closeMovModal(); });
     </script>
 </body>
 
